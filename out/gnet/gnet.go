@@ -9,8 +9,8 @@ import (
 	"time"
 
 	"github.com/jpillora/backoff"
+	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"github.com/raintank/raintank-metric/fake_metrics/out"
 	"github.com/raintank/schema"
 	"github.com/raintank/schema/msg"
 	"github.com/raintank/worldping-api/pkg/log"

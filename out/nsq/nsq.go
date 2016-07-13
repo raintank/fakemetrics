@@ -4,8 +4,8 @@ import (
 	"time"
 
 	n "github.com/nsqio/go-nsq"
+	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"github.com/raintank/raintank-metric/fake_metrics/out"
 	"github.com/raintank/schema"
 	"github.com/raintank/schema/msg"
 )

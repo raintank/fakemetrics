@@ -9,13 +9,13 @@ import (
 
 	"time"
 
+	"github.com/raintank/fakemetrics/out"
+	"github.com/raintank/fakemetrics/out/carbon"
+	"github.com/raintank/fakemetrics/out/kafkamdm"
+	"github.com/raintank/fakemetrics/out/nsq"
+	"github.com/raintank/fakemetrics/out/stdout"
 	"github.com/raintank/met"
 	"github.com/raintank/met/helper"
-	"github.com/raintank/raintank-metric/fake_metrics/out"
-	"github.com/raintank/raintank-metric/fake_metrics/out/carbon"
-	"github.com/raintank/raintank-metric/fake_metrics/out/kafkamdm"
-	"github.com/raintank/raintank-metric/fake_metrics/out/nsq"
-	"github.com/raintank/raintank-metric/fake_metrics/out/stdout"
 	"github.com/raintank/schema"
 	"github.com/raintank/worldping-api/pkg/log"
 )
