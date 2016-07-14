@@ -6,8 +6,8 @@ import (
 	n "github.com/nsqio/go-nsq"
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"github.com/raintank/schema"
-	"github.com/raintank/schema/msg"
+	"gopkg.in/raintank/schema.v0"
+	"gopkg.in/raintank/schema.v0/msg"
 )
 
 const NSQMaxMpubSize = 5 * 1024 * 1024 // nsq errors if more. not sure if can be changed

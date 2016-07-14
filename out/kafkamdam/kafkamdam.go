@@ -6,8 +6,8 @@ import (
 	"github.com/Shopify/sarama"
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"github.com/raintank/schema"
-	"github.com/raintank/schema/msg"
+	"gopkg.in/raintank/schema.v0"
+	"gopkg.in/raintank/schema.v0/msg"
 )
 
 // kafka output that sends MetricDataArrayMsgp messages

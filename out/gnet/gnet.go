@@ -11,9 +11,9 @@ import (
 	"github.com/jpillora/backoff"
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"github.com/raintank/schema"
-	"github.com/raintank/schema/msg"
 	"github.com/raintank/worldping-api/pkg/log"
+	"gopkg.in/raintank/schema.v0"
+	"gopkg.in/raintank/schema.v0/msg"
 )
 
 type Msg struct {

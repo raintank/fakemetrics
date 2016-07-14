@@ -16,8 +16,8 @@ import (
 	"github.com/raintank/fakemetrics/out/stdout"
 	"github.com/raintank/met"
 	"github.com/raintank/met/helper"
-	"github.com/raintank/schema"
 	"github.com/raintank/worldping-api/pkg/log"
+	"gopkg.in/raintank/schema.v0"
 )
 
 var (

@@ -9,7 +9,7 @@ import (
 
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"github.com/raintank/schema"
+	"gopkg.in/raintank/schema.v0"
 )
 
 type Carbon struct {
