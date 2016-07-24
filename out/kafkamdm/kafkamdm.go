@@ -8,7 +8,7 @@ import (
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
 	"github.com/raintank/worldping-api/pkg/log"
-	"gopkg.in/raintank/schema.v0"
+	"gopkg.in/raintank/schema.v1"
 )
 
 type KafkaMdm struct {

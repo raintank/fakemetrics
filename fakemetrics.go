@@ -21,7 +21,7 @@ import (
 	"github.com/raintank/met"
 	"github.com/raintank/met/helper"
 	"github.com/raintank/worldping-api/pkg/log"
-	"gopkg.in/raintank/schema.v0"
+	"gopkg.in/raintank/schema.v1"
 )
 
 var (
@@ -186,14 +186,14 @@ func runMultiplied(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup 
 			for k := 1; k <= keysPerOrg; k++ {
 				i := (r-1)*orgs*keysPerOrg + (o-1)*keysPerOrg + k - 1
 				metrics[i] = &schema.MetricData{
-					Name:       fmt.Sprintf("some.id.of.a.metric.%d", k),
-					Metric:     "some.id.of.a.metric",
-					OrgId:      o,
-					Interval:   metricPeriod,
-					Value:      0,
-					Unit:       "ms",
-					TargetType: "gauge",
-					Tags:       []string{"some_tag", "ok"},
+					Name:     fmt.Sprintf("some.id.of.a.metric.%d", k),
+					Metric:   "some.id.of.a.metric",
+					OrgId:    o,
+					Interval: metricPeriod,
+					Value:    0,
+					Unit:     "ms",
+					Mtype:    "gauge",
+					Tags:     []string{"some_tag", "ok"},
 				}
 				metrics[i].SetId()
 			}
@@ -244,14 +244,14 @@ func runDivided(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup int
 		for k := 1; k <= keysPerOrg; k++ {
 			i := (o-1)*keysPerOrg + k - 1
 			metrics[i] = &schema.MetricData{
-				Name:       fmt.Sprintf("some.id.of.a.metric.%d", k),
-				Metric:     "some.id.of.a.metric",
-				OrgId:      o,
-				Interval:   metricPeriod,
-				Value:      0,
-				Unit:       "ms",
-				TargetType: "gauge",
-				Tags:       []string{"some_tag", "ok"},
+				Name:     fmt.Sprintf("some.id.of.a.metric.%d", k),
+				Metric:   "some.id.of.a.metric",
+				OrgId:    o,
+				Interval: metricPeriod,
+				Value:    0,
+				Unit:     "ms",
+				Mtype:    "gauge",
+				Tags:     []string{"some_tag", "ok"},
 			}
 			metrics[i].SetId()
 		}

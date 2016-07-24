@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/raintank/met"
-	"gopkg.in/raintank/schema.v0"
+	"gopkg.in/raintank/schema.v1"
 )
 
 type Out interface {

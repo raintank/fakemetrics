@@ -17,7 +17,7 @@ import (
 	"github.com/raintank/met"
 	"github.com/raintank/met/helper"
 	"github.com/raintank/worldping-api/pkg/log"
-	"gopkg.in/raintank/schema.v0"
+	"gopkg.in/raintank/schema.v1"
 )
 
 var (
