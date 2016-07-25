@@ -18,6 +18,7 @@ import (
 	"github.com/raintank/fakemetrics/out/kafkamdam"
 	"github.com/raintank/fakemetrics/out/kafkamdm"
 	"github.com/raintank/fakemetrics/out/nsq"
+	"github.com/raintank/fakemetrics/out/stdout"
 	"github.com/raintank/met"
 	"github.com/raintank/met/helper"
 	"github.com/raintank/worldping-api/pkg/log"
@@ -37,6 +38,7 @@ var (
 	gnetAddr         = flag.String("gnet-address", "", "gnet address. e.g. http://localhost:8081")
 	gnetKey          = flag.String("gnet-key", "", "gnet api key")
 	kafkaCompression = flag.String("kafka-comp", "none", "compression: none|gzip|snappy")
+	stdoutOut        = flag.Bool("stdout", false, "enable stdout output")
 	logLevel         = flag.Int("log-level", 2, "log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL")
 	orgs             = flag.Int("orgs", 1, "how many orgs to simulate")
 	keysPerOrg       = flag.Int("keys-per-org", 100, "how many metrics per orgs to simulate")
@@ -131,6 +133,10 @@ func main() {
 			log.Fatal(4, "failed to create NSQ output. %s", err)
 		}
 		outs = append(outs, o)
+	}
+
+	if *stdoutOut {
+		outs = append(outs, stdout.New(stats))
 	}
 
 	if (1000**metricPeriod)%*flushPeriod != 0 {
