@@ -193,7 +193,7 @@ func runMultiplied(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup 
 					Value:    0,
 					Unit:     "ms",
 					Mtype:    "gauge",
-					Tags:     []string{"some_tag", "ok"},
+					Tags:     []string{"some_tag", "ok", fmt.Sprintf("k:%d", k)},
 				}
 				metrics[i].SetId()
 			}
@@ -251,7 +251,7 @@ func runDivided(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup int
 				Value:    0,
 				Unit:     "ms",
 				Mtype:    "gauge",
-				Tags:     []string{"some_tag", "ok"},
+				Tags:     []string{"some_tag", "ok", fmt.Sprintf("k:%d", k)},
 			}
 			metrics[i].SetId()
 		}
