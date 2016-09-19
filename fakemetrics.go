@@ -38,6 +38,7 @@ var (
 	gnetAddr         = flag.String("gnet-address", "", "gnet address. e.g. http://localhost:8081")
 	gnetKey          = flag.String("gnet-key", "", "gnet api key")
 	kafkaCompression = flag.String("kafka-comp", "none", "compression: none|gzip|snappy")
+	shardOrg         = flag.Bool("shard-org", false, "shard orgs (kafka-mdm only. experimental)")
 	stdoutOut        = flag.Bool("stdout", false, "enable stdout output")
 	logLevel         = flag.Int("log-level", 2, "log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL")
 	orgs             = flag.Int("orgs", 1, "how many orgs to simulate")
@@ -108,7 +109,7 @@ func main() {
 	}
 
 	if *kafkaMdmTCPAddr != "" {
-		o, err := kafkamdm.New("mdm", []string{*kafkaMdmTCPAddr}, *kafkaCompression, stats)
+		o, err := kafkamdm.New("mdm", []string{*kafkaMdmTCPAddr}, *kafkaCompression, stats, *shardOrg)
 		if err != nil {
 			log.Fatal(4, "failed to create kafka-mdm output. %s", err)
 		}

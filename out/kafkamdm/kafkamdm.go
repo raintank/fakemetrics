@@ -2,6 +2,8 @@ package kafkamdm
 
 import (
 	"encoding/binary"
+	"hash"
+	"hash/fnv"
 	"time"
 
 	"github.com/Shopify/sarama"
@@ -13,13 +15,15 @@ import (
 
 type KafkaMdm struct {
 	out.OutStats
-	topic   string
-	brokers []string
-	config  *sarama.Config
-	client  sarama.SyncProducer
+	topic    string
+	brokers  []string
+	config   *sarama.Config
+	client   sarama.SyncProducer
+	shardOrg bool
+	hash     hash.Hash32
 }
 
-func New(topic string, brokers []string, codec string, stats met.Backend) (*KafkaMdm, error) {
+func New(topic string, brokers []string, codec string, stats met.Backend, shardOrg bool) (*KafkaMdm, error) {
 	// We are looking for strong consistency semantics.
 	// Because we don't change the flush settings, sarama will try to produce messages
 	// as fast as possible to keep latency low.
@@ -43,6 +47,8 @@ func New(topic string, brokers []string, codec string, stats met.Backend) (*Kafk
 		brokers:  brokers,
 		config:   config,
 		client:   client,
+		shardOrg: shardOrg,
+		hash:     fnv.New32a(),
 	}, nil
 }
 
@@ -77,6 +83,13 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 		// large organisations can go to several partitions instead of just one.
 		key := make([]byte, 8)
 		binary.LittleEndian.PutUint32(key, uint32(metric.OrgId))
+
+		if k.shardOrg {
+			k.hash.Write([]byte(metric.Name))
+			binary.LittleEndian.PutUint32(key[4:], k.hash.Sum32())
+			k.hash.Reset()
+		}
+
 		payload[i] = &sarama.ProducerMessage{
 			Key:   sarama.ByteEncoder(key),
 			Topic: k.topic,
