@@ -143,7 +143,7 @@ func main() {
 	if (1000**metricPeriod)%*flushPeriod != 0 {
 		panic("metricPeriod must be cleanly divisible by flushPeriod")
 	}
-	off := int(dur.MustParseUsec("offset", *offset))
+	off := int(dur.MustParseDuration("offset", *offset))
 
 	if *listenAddr != "" {
 		go func() {
