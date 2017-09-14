@@ -33,6 +33,7 @@ var (
 	listenAddr       = flag.String("listen", ":6764", "http listener address for pprof.")
 	nsqdTCPAddr      = flag.String("nsqd-tcp-address", "", "nsqd TCP address. e.g. localhost:4150")
 	kafkaMdmTCPAddr  = flag.String("kafka-mdm-tcp-address", "", "kafka TCP address for MetricData-Msgp messages. e.g. localhost:9092")
+	kafkaMdmTopic    = flag.String("kafka-mdm-topic", "mdm", "kafka topic for MetricData-Msgp messages")
 	kafkaMdamTCPAddr = flag.String("kafka-mdam-tcp-address", "", "kafka TCP address for MetricDataArray-Msgp messages. e.g. localhost:9092")
 	carbonTCPAddr    = flag.String("carbon-tcp-address", "", "carbon TCP address. e.g. localhost:2003")
 	gnetAddr         = flag.String("gnet-address", "", "gnet address. e.g. http://localhost:8081")
@@ -109,7 +110,10 @@ func main() {
 	}
 
 	if *kafkaMdmTCPAddr != "" {
-		o, err := kafkamdm.New("mdm", []string{*kafkaMdmTCPAddr}, *kafkaCompression, stats, *shardOrg)
+		if *kafkaMdmTopic == "" {
+			log.Fatal(4, "kafka-mdm needs the topic to be set")
+		}
+		o, err := kafkamdm.New(*kafkaMdmTopic, []string{*kafkaMdmTCPAddr}, *kafkaCompression, stats, *shardOrg)
 		if err != nil {
 			log.Fatal(4, "failed to create kafka-mdm output. %s", err)
 		}
