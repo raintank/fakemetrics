@@ -196,15 +196,17 @@ func runMultiplied(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup 
 		for o := 1; o <= orgs; o++ {
 			for k := 1; k <= keysPerOrg; k++ {
 				i := (r-1)*orgs*keysPerOrg + (o-1)*keysPerOrg + k - 1
+				metric := "some.id.of.a.metric"
+				name := fmt.Sprintf("%s.%d", metric, k)
 				metrics[i] = &schema.MetricData{
-					Name:     fmt.Sprintf("some.id.of.a.metric.%d", k),
-					Metric:   "some.id.of.a.metric",
+					Name:     name,
+					Metric:   metric,
 					OrgId:    o,
 					Interval: metricPeriod,
 					Value:    0,
 					Unit:     "ms",
 					Mtype:    "gauge",
-					Tags:     []string{"some_tag", "ok", fmt.Sprintf("k:%d", k)},
+					Tags:     []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("metric=%s", metric)},
 				}
 				metrics[i].SetId()
 			}
@@ -254,15 +256,17 @@ func runDivided(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup int
 	for o := 1; o <= orgs; o++ {
 		for k := 1; k <= keysPerOrg; k++ {
 			i := (o-1)*keysPerOrg + k - 1
+			metric := "some.id.of.a.metric"
+			name := fmt.Sprintf("%s.%d", metric, k)
 			metrics[i] = &schema.MetricData{
-				Name:     fmt.Sprintf("some.id.of.a.metric.%d", k),
-				Metric:   "some.id.of.a.metric",
+				Name:     name,
+				Metric:   metric,
 				OrgId:    o,
 				Interval: metricPeriod,
 				Value:    0,
 				Unit:     "ms",
 				Mtype:    "gauge",
-				Tags:     []string{"some_tag", "ok", fmt.Sprintf("k:%d", k)},
+				Tags:     []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("metric=%s", metric)},
 			}
 			metrics[i].SetId()
 		}
