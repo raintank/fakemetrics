@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"math/rand"
 	"os"
+	"runtime"
 	"strings"
 
 	"net/http"
@@ -53,6 +54,8 @@ var (
 	statsdType       = flag.String("statsd-type", "standard", "statsd type: standard or datadog")
 
 	flushDuration met.Timer
+
+	Version = "unknown"
 )
 
 func main() {
@@ -61,7 +64,7 @@ func main() {
 	log.NewLogger(0, "console", fmt.Sprintf(`{"level": %d, "formatting":true}`, *logLevel))
 
 	if *showVersion {
-		fmt.Println("fake_metrics")
+		fmt.Printf("fakemetrics %s (built with %s)\n", Version, runtime.Version())
 		return
 	}
 
