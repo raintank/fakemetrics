@@ -51,6 +51,7 @@ var (
 	stopAtNow        = flag.Bool("stop-at-now", false, "stop program instead of starting to write data with future timestamps")
 	statsdAddr       = flag.String("statsd-addr", "", "statsd address. e.g. localhost:8125")
 	statsdType       = flag.String("statsd-type", "standard", "statsd type: standard or datadog")
+	unorderBy        = flag.Int("unorder-by", 0, "unorder metrics by up to the given number of datapoints")
 
 	flushDuration met.Timer
 )
@@ -221,7 +222,12 @@ func runMultiplied(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup 
 			if i%uniqueKeys == 0 {
 				ts += mp
 			}
-			metrics[i].Time = ts
+			if *unorderBy > 0 {
+				offset := ts % int64(*unorderBy)
+				metrics[i].Time = ts + int64(*unorderBy) - (2 * offset)
+			} else {
+				metrics[i].Time = ts
+			}
 			metrics[i].Value = rand.Float64() * float64(i+1)
 		}
 
@@ -286,7 +292,12 @@ func runDivided(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup int
 			ts += mp
 		}
 		for i := startIndex; i < endIndex; i++ {
-			metrics[i].Time = ts
+			if *unorderBy > 0 {
+				offset := ts % int64(*unorderBy)
+				metrics[i].Time = ts + int64(*unorderBy) - (2 * offset)
+			} else {
+				metrics[i].Time = ts
+			}
 			metrics[i].Value = rand.Float64() * float64(i+1)
 		}
 
