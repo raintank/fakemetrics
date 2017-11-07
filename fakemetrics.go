@@ -40,7 +40,7 @@ var (
 	gnetAddr         = flag.String("gnet-address", "", "gnet address. e.g. http://localhost:8081")
 	gnetKey          = flag.String("gnet-key", "", "gnet api key")
 	kafkaCompression = flag.String("kafka-comp", "none", "compression: none|gzip|snappy")
-	shardOrg         = flag.Bool("shard-org", false, "shard orgs (kafka-mdm only. experimental)")
+	partitionScheme  = flag.String("partition-scheme", "bySeries", "method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries)")
 	stdoutOut        = flag.Bool("stdout", false, "enable stdout output")
 	logLevel         = flag.Int("log-level", 2, "log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL")
 	orgs             = flag.Int("orgs", 1, "how many orgs to simulate")
@@ -116,7 +116,7 @@ func main() {
 		if *kafkaMdmTopic == "" {
 			log.Fatal(4, "kafka-mdm needs the topic to be set")
 		}
-		o, err := kafkamdm.New(*kafkaMdmTopic, []string{*kafkaMdmTCPAddr}, *kafkaCompression, stats, *shardOrg)
+		o, err := kafkamdm.New(*kafkaMdmTopic, []string{*kafkaMdmTCPAddr}, *kafkaCompression, stats, *partitionScheme)
 		if err != nil {
 			log.Fatal(4, "failed to create kafka-mdm output. %s", err)
 		}

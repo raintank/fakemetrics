@@ -1,12 +1,13 @@
 package kafkamdm
 
 import (
-	"encoding/binary"
+	"fmt"
 	"hash"
 	"hash/fnv"
 	"time"
 
 	"github.com/Shopify/sarama"
+	p "github.com/grafana/metrictank/cluster/partitioner"
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
 	"github.com/raintank/worldping-api/pkg/log"
@@ -15,15 +16,15 @@ import (
 
 type KafkaMdm struct {
 	out.OutStats
-	topic    string
-	brokers  []string
-	config   *sarama.Config
-	client   sarama.SyncProducer
-	shardOrg bool
-	hash     hash.Hash32
+	topic   string
+	brokers []string
+	config  *sarama.Config
+	client  sarama.SyncProducer
+	hash    hash.Hash32
+	part    *p.Kafka
 }
 
-func New(topic string, brokers []string, codec string, stats met.Backend, shardOrg bool) (*KafkaMdm, error) {
+func New(topic string, brokers []string, codec string, stats met.Backend, partitionScheme string) (*KafkaMdm, error) {
 	// We are looking for strong consistency semantics.
 	// Because we don't change the flush settings, sarama will try to produce messages
 	// as fast as possible to keep latency low.
@@ -41,6 +42,18 @@ func New(topic string, brokers []string, codec string, stats met.Backend, shardO
 	if err != nil {
 		return nil, err
 	}
+	var partitioner *p.Kafka
+	switch partitionScheme {
+	case "byOrg":
+		partitioner, err = p.NewKafka("byOrg")
+	case "bySeries":
+		partitioner, err = p.NewKafka("bySeries")
+	default:
+		err = fmt.Errorf("partitionScheme must be one of 'byOrg|bySeries'. got %s", partitionScheme)
+	}
+	if err != nil {
+		return nil, err
+	}
 
 	return &KafkaMdm{
 		OutStats: out.NewStats(stats, "kafka-mdm"),
@@ -48,7 +61,7 @@ func New(topic string, brokers []string, codec string, stats met.Backend, shardO
 		brokers:  brokers,
 		config:   config,
 		client:   client,
-		shardOrg: shardOrg,
+		part:     partitioner,
 		hash:     fnv.New32a(),
 	}, nil
 }
@@ -77,18 +90,9 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 
 		k.MessageBytes.Value(int64(len(data)))
 
-		// partition by organisation: metrics for the same org should go to the same
-		// partition/MetricTank (optimize for locality~performance)
-		// the extra 4B (now initialized with zeroes) is to later enable a smooth transition
-		// to a more fine-grained partitioning scheme where
-		// large organisations can go to several partitions instead of just one.
-		key := make([]byte, 8)
-		binary.LittleEndian.PutUint32(key, uint32(metric.OrgId))
-
-		if k.shardOrg {
-			k.hash.Write([]byte(metric.Name))
-			binary.LittleEndian.PutUint32(key[4:], k.hash.Sum32())
-			k.hash.Reset()
+		key, err := k.part.GetPartitionKey(metric, nil)
+		if err != nil {
+			log.Fatal(4, "Failed to get partition for metric. %s", err)
 		}
 
 		payload[i] = &sarama.ProducerMessage{
