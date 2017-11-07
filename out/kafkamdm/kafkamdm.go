@@ -1,9 +1,11 @@
 package kafkamdm
 
 import (
+	"bytes"
 	"fmt"
 	"hash"
 	"hash/fnv"
+	"strconv"
 	"time"
 
 	"github.com/Shopify/sarama"
@@ -16,12 +18,36 @@ import (
 
 type KafkaMdm struct {
 	out.OutStats
-	topic   string
-	brokers []string
-	config  *sarama.Config
-	client  sarama.SyncProducer
-	hash    hash.Hash32
-	part    *p.Kafka
+	topic      string
+	brokers    []string
+	config     *sarama.Config
+	client     sarama.SyncProducer
+	hash       hash.Hash32
+	part       *p.Kafka
+	lmPart     LastNumPartitioner
+	partScheme string
+}
+
+// map the last number in the metricname to the partition
+// needless to say, caller beware of how many/which partitions there are
+type LastNumPartitioner struct{}
+
+func (p *LastNumPartitioner) Partition(m schema.PartitionedMetric, numPartitions int32) (int32, error) {
+	name := m.KeyBySeries(nil)
+	index := bytes.LastIndexByte(name, '.')
+	if index < 0 {
+		return 0, fmt.Errorf("invalid metricname for LastNumPartitioner: '%s'", name)
+	}
+	part, err := strconv.ParseInt(string(name[index:]), 10, 32)
+	if err != nil {
+		return 0, fmt.Errorf("invalid metricname for LastNumPartitioner: '%s'", name)
+	}
+	return int32(part), nil
+}
+
+// key is by metric name, but won't be used for partition setting
+func (p *LastNumPartitioner) GetPartitionKey(m schema.PartitionedMetric, b []byte) ([]byte, error) {
+	return m.KeyBySeries(b), nil
 }
 
 func New(topic string, brokers []string, codec string, stats met.Backend, partitionScheme string) (*KafkaMdm, error) {
@@ -33,6 +59,7 @@ func New(topic string, brokers []string, codec string, stats met.Backend, partit
 	config.Producer.RequiredAcks = sarama.WaitForAll // Wait for all in-sync replicas to ack the message
 	config.Producer.Retry.Max = 10                   // Retry up to 10 times to produce the message
 	config.Producer.Compression = out.GetCompression(codec)
+	config.Producer.Partitioner = sarama.NewManualPartitioner
 	err := config.Validate()
 	if err != nil {
 		return nil, err
@@ -42,27 +69,34 @@ func New(topic string, brokers []string, codec string, stats met.Backend, partit
 	if err != nil {
 		return nil, err
 	}
-	var partitioner *p.Kafka
+	var part *p.Kafka
+	var lmPart LastNumPartitioner
 	switch partitionScheme {
 	case "byOrg":
-		partitioner, err = p.NewKafka("byOrg")
+		part, err = p.NewKafka("byOrg")
 	case "bySeries":
-		partitioner, err = p.NewKafka("bySeries")
+		part, err = p.NewKafka("bySeries")
+	case "lastNum":
+		lmPart = LastNumPartitioner{}
+		// sets partition based on message partition field
+		config.Producer.Partitioner = sarama.NewManualPartitioner
 	default:
-		err = fmt.Errorf("partitionScheme must be one of 'byOrg|bySeries'. got %s", partitionScheme)
+		err = fmt.Errorf("partitionScheme must be one of 'byOrg|bySeries|lastNum'. got %s", partitionScheme)
 	}
 	if err != nil {
 		return nil, err
 	}
 
 	return &KafkaMdm{
-		OutStats: out.NewStats(stats, "kafka-mdm"),
-		topic:    topic,
-		brokers:  brokers,
-		config:   config,
-		client:   client,
-		part:     partitioner,
-		hash:     fnv.New32a(),
+		OutStats:   out.NewStats(stats, "kafka-mdm"),
+		topic:      topic,
+		brokers:    brokers,
+		config:     config,
+		client:     client,
+		hash:       fnv.New32a(),
+		part:       part,
+		lmPart:     lmPart,
+		partScheme: partitionScheme,
 	}, nil
 }
 
@@ -90,15 +124,28 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 
 		k.MessageBytes.Value(int64(len(data)))
 
-		key, err := k.part.GetPartitionKey(metric, nil)
-		if err != nil {
-			log.Fatal(4, "Failed to get partition for metric. %s", err)
-		}
+		if k.partScheme == "lastNum" {
+			part, err := k.lmPart.Partition(metric, 0)
+			if err != nil {
+				log.Fatal(4, "Failed to get partition for metric. %s", err)
+			}
 
-		payload[i] = &sarama.ProducerMessage{
-			Key:   sarama.ByteEncoder(key),
-			Topic: k.topic,
-			Value: sarama.ByteEncoder(data),
+			payload[i] = &sarama.ProducerMessage{
+				Partition: part,
+				Topic:     k.topic,
+				Value:     sarama.ByteEncoder(data),
+			}
+		} else {
+			key, err := k.part.GetPartitionKey(metric, nil)
+			if err != nil {
+				log.Fatal(4, "Failed to get partition for metric. %s", err)
+			}
+
+			payload[i] = &sarama.ProducerMessage{
+				Key:   sarama.ByteEncoder(key),
+				Topic: k.topic,
+				Value: sarama.ByteEncoder(data),
+			}
 		}
 
 	}
