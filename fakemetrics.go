@@ -52,6 +52,7 @@ var (
 	stopAtNow        = flag.Bool("stop-at-now", false, "stop program instead of starting to write data with future timestamps")
 	statsdAddr       = flag.String("statsd-addr", "", "statsd address. e.g. localhost:8125")
 	statsdType       = flag.String("statsd-type", "standard", "statsd type: standard or datadog")
+	addTags          = flag.Bool("add-tags", true, "add tags to generated metrics")
 
 	flushDuration met.Timer
 
@@ -195,12 +196,19 @@ func runMultiplied(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup 
 	fmt.Printf("each %s, sending %d metrics. (sending the %d metrics %d times per flush, each time advancing them by %d s)\n", tickDur, totalKeys, uniqueKeys, ratio, metricPeriod)
 
 	metrics := make([]*schema.MetricData, totalKeys)
+
 	for r := 1; r <= ratio; r++ {
 		for o := 1; o <= orgs; o++ {
 			for k := 1; k <= keysPerOrg; k++ {
 				i := (r-1)*orgs*keysPerOrg + (o-1)*keysPerOrg + k - 1
+				var tags []string
 				metric := "some.id.of.a.metric"
 				name := fmt.Sprintf("%s.%d", metric, k)
+				if *addTags {
+					tags = []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("id=%d", k)}
+				} else {
+					metric = name
+				}
 				metrics[i] = &schema.MetricData{
 					Name:     name,
 					Metric:   metric,
@@ -209,7 +217,7 @@ func runMultiplied(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup 
 					Value:    0,
 					Unit:     "ms",
 					Mtype:    "gauge",
-					Tags:     []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("metric=%s", metric)},
+					Tags:     tags,
 				}
 				metrics[i].SetId()
 			}
@@ -259,8 +267,14 @@ func runDivided(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup int
 	for o := 1; o <= orgs; o++ {
 		for k := 1; k <= keysPerOrg; k++ {
 			i := (o-1)*keysPerOrg + k - 1
+			var tags []string
 			metric := "some.id.of.a.metric"
 			name := fmt.Sprintf("%s.%d", metric, k)
+			if *addTags {
+				tags = []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("id=%d", k)}
+			} else {
+				metric = name
+			}
 			metrics[i] = &schema.MetricData{
 				Name:     name,
 				Metric:   metric,
@@ -269,7 +283,7 @@ func runDivided(orgs, keysPerOrg, metricPeriod, flushPeriod, offset, speedup int
 				Value:    0,
 				Unit:     "ms",
 				Mtype:    "gauge",
-				Tags:     []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("metric=%s", metric)},
+				Tags:     tags,
 			}
 			metrics[i].SetId()
 		}
