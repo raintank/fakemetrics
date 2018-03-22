@@ -13,8 +13,6 @@ Usage of ./fake_metrics:
     	log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL (default 2)
   -metricPeriod int
     	period in seconds between metric points (default 1)
-  -nsqd-tcp-address string
-    	nsqd TCP address. e.g. localhost:4150
   -offset string
     	offset duration expression. (how far back in time to start. e.g. 1month, 6h, etc
   -orgs int

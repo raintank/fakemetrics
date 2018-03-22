@@ -17,7 +17,6 @@ type Stdout struct {
 }
 
 func New(stats met.Backend) *Stdout {
-
 	return &Stdout{
 		sync.Mutex{},
 		out.NewStats(stats, "stdout"),
