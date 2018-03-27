@@ -11,9 +11,11 @@ import (
 	"github.com/Shopify/sarama"
 	p "github.com/grafana/metrictank/cluster/partitioner"
 	"github.com/raintank/fakemetrics/out"
+	"github.com/raintank/fakemetrics/out/kafkamdm/keycache"
 	"github.com/raintank/met"
 	"github.com/raintank/worldping-api/pkg/log"
 	"gopkg.in/raintank/schema.v1"
+	"gopkg.in/raintank/schema.v1/msg"
 )
 
 type KafkaMdm struct {
@@ -26,6 +28,8 @@ type KafkaMdm struct {
 	part       *p.Kafka
 	lmPart     LastNumPartitioner
 	partScheme string
+	v2         bool
+	keyCache   *keycache.KeyCache
 }
 
 // map the last number in the metricname to the partition
@@ -50,7 +54,7 @@ func (p *LastNumPartitioner) GetPartitionKey(m schema.PartitionedMetric, b []byt
 	return m.KeyBySeries(b), nil
 }
 
-func New(topic string, brokers []string, codec string, stats met.Backend, partitionScheme string) (*KafkaMdm, error) {
+func New(topic string, brokers []string, codec string, stats met.Backend, partitionScheme string, v2 bool) (*KafkaMdm, error) {
 	// We are looking for strong consistency semantics.
 	// Because we don't change the flush settings, sarama will try to produce messages
 	// as fast as possible to keep latency low.
@@ -86,8 +90,7 @@ func New(topic string, brokers []string, codec string, stats met.Backend, partit
 	if err != nil {
 		return nil, err
 	}
-
-	return &KafkaMdm{
+	k := &KafkaMdm{
 		OutStats:   out.NewStats(stats, "kafka-mdm"),
 		topic:      topic,
 		brokers:    brokers,
@@ -97,7 +100,12 @@ func New(topic string, brokers []string, codec string, stats met.Backend, partit
 		part:       part,
 		lmPart:     lmPart,
 		partScheme: partitionScheme,
-	}, nil
+		v2:         v2,
+	}
+	if v2 {
+		k.keyCache = keycache.NewKeyCache(20*time.Minute, time.Duration(5)*time.Minute)
+	}
+	return k, nil
 }
 
 func (k *KafkaMdm) Close() error {
@@ -112,12 +120,37 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 	preFlush := time.Now()
 
 	k.MessageMetrics.Value(1)
-	var data []byte
 
 	payload := make([]*sarama.ProducerMessage, len(metrics))
+	var notOk int
 
 	for i, metric := range metrics {
-		data, err := metric.MarshalMsg(data[:])
+		var data []byte
+		var err error
+		if k.v2 {
+			var mkey schema.MKey
+			mkey, err = schema.MKeyFromString(metric.Id)
+			if err != nil {
+				return err
+			}
+			ok := k.keyCache.Touch(mkey, preFlush)
+			// we've seen this key recently. we can use the optimized format
+			if ok {
+				mp := schema.MetricPoint{
+					MKey:  mkey,
+					Value: metric.Value,
+					Time:  uint32(metric.Time),
+				}
+				data = []byte{byte(msg.FormatMetricPoint)}
+				data, err = mp.Marshal(data)
+
+			} else {
+				notOk++
+				data, err = metric.MarshalMsg(data[:])
+			}
+		} else {
+			data, err = metric.MarshalMsg(data[:])
+		}
 		if err != nil {
 			return err
 		}
@@ -148,6 +181,9 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 			}
 		}
 
+	}
+	if notOk > 0 {
+		fmt.Println(preFlush, notOk, "metrics could not be sent as v2 MetricPoint")
 	}
 	prePub := time.Now()
 	err := k.client.SendMessages(payload)

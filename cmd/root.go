@@ -67,6 +67,7 @@ var (
 
 	kafkaMdmAddr     string
 	kafkaMdmTopic    string
+	kafkaMdmV2       bool
 	kafkaMdamAddr    string
 	kafkaCompression string
 	partitionScheme  string
@@ -101,6 +102,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&kafkaMdmAddr, "kafka-mdm-addr", "", "kafka TCP address for MetricData-Msgp messages. e.g. localhost:9092")
 	rootCmd.PersistentFlags().StringVar(&kafkaMdmTopic, "kafka-mdm-topic", "mdm", "kafka topic for MetricData-Msgp messages")
+	rootCmd.PersistentFlags().BoolVar(&kafkaMdmV2, "kafka-mdm-v2", true, "enable MetricPoint optimization (send MetricData first, then optimized MetricPoint payloads)")
 	rootCmd.PersistentFlags().StringVar(&kafkaMdamAddr, "kafka-mdam-addr", "", "kafka TCP address for MetricDataArray-Msgp messages. e.g. localhost:9092")
 	rootCmd.PersistentFlags().StringVar(&kafkaCompression, "kafka-comp", "snappy", "compression: none|gzip|snappy")
 	rootCmd.PersistentFlags().StringVar(&partitionScheme, "partition-scheme", "bySeries", "method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries|lastNum)")

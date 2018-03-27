@@ -63,7 +63,7 @@ func getOutputs() []out.Out {
 		if kafkaMdmTopic == "" {
 			log.Fatal(4, "kafka-mdm needs the topic to be set")
 		}
-		o, err := kafkamdm.New(kafkaMdmTopic, []string{kafkaMdmAddr}, kafkaCompression, stats, partitionScheme)
+		o, err := kafkamdm.New(kafkaMdmTopic, []string{kafkaMdmAddr}, kafkaCompression, stats, partitionScheme, kafkaMdmV2)
 		if err != nil {
 			log.Fatal(4, "failed to create kafka-mdm output. %s", err)
 		}
