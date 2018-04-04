@@ -28,9 +28,12 @@ import (
 // storageconfCmd represents the storageconf command
 var storageconfCmd = &cobra.Command{
 	Use:   "storageconf",
-	Short: "Sends out a small set of metrics which you can test aggregation and retention rules on",
+	Short: "Sends out one or more set of 10 metrics which you can test aggregation and retention rules on",
 	Run: func(cmd *cobra.Command, args []string) {
 		initStats(true, "storageconf")
+		if mpo%10 != 0 {
+			log.Fatal("mpo must divide by 10")
+		}
 		period = int(periodDur.Seconds())
 		flush = int(flushDur.Nanoseconds() / 1000 / 1000)
 		outs := getOutputs()
@@ -41,18 +44,23 @@ var storageconfCmd = &cobra.Command{
 		from := to - 24*60*60
 
 		names := []string{
-			"fakemetrics.raw.min",
-			"fakemetrics.raw.max",
-			"fakemetrics.raw.sum",
-			"fakemetrics.raw.default",
-			"fakemetrics.agg.min",
-			"fakemetrics.agg.max",
-			"fakemetrics.agg.sum",
-			"fakemetrics.agg.default",
+			"fakemetrics.raw.%d.min",
+			"fakemetrics.raw.%d.max",
+			"fakemetrics.raw.%d.sum",
+			"fakemetrics.raw.%d.lst",
+			"fakemetrics.raw.%d.default",
+			"fakemetrics.agg.%d.min",
+			"fakemetrics.agg.%d.max",
+			"fakemetrics.agg.%d.sum",
+			"fakemetrics.agg.%d.lst",
+			"fakemetrics.agg.%d.default",
 		}
 		var metrics []*schema.MetricData
-		for _, name := range names {
-			metrics = append(metrics, buildMetric(name, 1))
+		sets := mpo / 10
+		for set := 1; set <= sets; set++ {
+			for _, name := range names {
+				metrics = append(metrics, buildMetric(name, set, 1))
+			}
 		}
 		do(metrics, from, to, outs)
 	},
@@ -60,12 +68,13 @@ var storageconfCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(storageconfCmd)
+	storageconfCmd.Flags().IntVar(&mpo, "mpo", 10, "how many metrics per org to simulate (must be multiple of 10)")
 }
 
-func buildMetric(name string, org int) *schema.MetricData {
+func buildMetric(name string, set, org int) *schema.MetricData {
 	out := &schema.MetricData{
-		Name:     name,
-		Metric:   name,
+		Name:     fmt.Sprintf(name, set),
+		Metric:   fmt.Sprintf(name, set),
 		OrgId:    org,
 		Interval: 1,
 		Unit:     "ms",
