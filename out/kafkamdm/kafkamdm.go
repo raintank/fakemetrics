@@ -63,7 +63,6 @@ func New(topic string, brokers []string, codec string, stats met.Backend, partit
 	config.Producer.RequiredAcks = sarama.WaitForAll // Wait for all in-sync replicas to ack the message
 	config.Producer.Retry.Max = 10                   // Retry up to 10 times to produce the message
 	config.Producer.Compression = out.GetCompression(codec)
-	config.Producer.Partitioner = sarama.NewManualPartitioner
 	err := config.Validate()
 	if err != nil {
 		return nil, err
