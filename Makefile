@@ -1,7 +1,7 @@
 VERSION=$(shell git describe --tags --always | sed 's/^v//')
 
 build:
-	go build -ldflags "-X main.Version=$(VERSION)"
+	go build -ldflags "-X github.com/raintank/fakemetrics/cmd.Version=$(VERSION)"
 
 install:
-	go install -ldflags "-X main.Version=$(VERSION)"
+	go install -ldflags "-X github.com/raintank/fakemetrics/cmd.Version=$(VERSION)"
