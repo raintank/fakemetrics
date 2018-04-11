@@ -18,18 +18,12 @@ func buildMetrics(orgs, mpo, period int) [][]schema.MetricData {
 		metrics := make([]schema.MetricData, mpo)
 		for m := 0; m < mpo; m++ {
 			var tags []string
-			var name, metric string
+			name := fmt.Sprintf("some.id.of.a.metric.%d", m+1)
 			if addTags {
-				name = fmt.Sprintf("some.id.of.a.metric.%d", m+1)
-				metric = "some.id.of.a.metric"
 				tags = []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("id=%d", m+1)}
-			} else {
-				name = fmt.Sprintf("some.id.of.a.metric.%d", m+1)
-				metric = name
 			}
 			metrics[m] = schema.MetricData{
 				Name:     name,
-				Metric:   metric,
 				OrgId:    o + 1,
 				Interval: period,
 				Unit:     "ms",

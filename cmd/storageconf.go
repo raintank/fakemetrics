@@ -74,7 +74,6 @@ func init() {
 func buildMetric(name string, set, org int) *schema.MetricData {
 	out := &schema.MetricData{
 		Name:     fmt.Sprintf(name, set),
-		Metric:   fmt.Sprintf(name, set),
 		OrgId:    org,
 		Interval: 1,
 		Unit:     "ms",
