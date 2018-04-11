@@ -96,7 +96,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.fakemetrics.yaml)")
 	rootCmd.PersistentFlags().StringVar(&listenAddr, "listen", ":6764", "http listener address for pprof.")
 	rootCmd.PersistentFlags().IntVar(&logLevel, "log-level", 2, "log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL")
-	rootCmd.PersistentFlags().StringVar(&statsdAddr, "statsd-addr", "localhost:8125", "statsd TCP address")
+	rootCmd.PersistentFlags().StringVar(&statsdAddr, "statsd-addr", "", "statsd TCP address. e.g. 'localhost:8125'")
 	rootCmd.PersistentFlags().StringVar(&statsdType, "statsd-type", "standard", "statsd type: standard or datadog")
 
 	rootCmd.PersistentFlags().BoolVarP(&addTags, "add-tags", "t", true, "add tags to generated metrics")
