@@ -102,7 +102,7 @@ func New(topic string, brokers []string, codec string, stats met.Backend, partit
 		v2:         v2,
 	}
 	if v2 {
-		k.keyCache = keycache.NewKeyCache(20*time.Minute, time.Duration(5)*time.Minute)
+		k.keyCache = keycache.NewKeyCache(20*time.Minute, time.Duration(10)*time.Minute)
 	}
 	return k, nil
 }
