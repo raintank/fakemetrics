@@ -107,7 +107,7 @@ func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, sto
 				if ratePerFlushPerOrg > mpo && m == 0 && num != 0 {
 					ts += mp
 				}
-				metricData.Time = now
+				metricData.Time = ts
 				metricData.Value = rand.Float64() * float64(m+1)
 				data = append(data, &metricData)
 			}
