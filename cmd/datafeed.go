@@ -104,10 +104,10 @@ func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, sto
 				metricData := metrics[o][m]
 				// not the very first metric, but we "cycled back" to reusing metrics
 				// we already sent, so we must increase the timestamp
-				if ratePerFlushPerOrg > mpo && m == 0 && num != 0 {
+				if m == 0 {
 					ts += mp
 				}
-				metricData.Time = now
+				metricData.Time = ts
 				metricData.Value = rand.Float64() * float64(m+1)
 				data = append(data, &metricData)
 			}
