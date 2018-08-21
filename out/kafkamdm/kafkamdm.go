@@ -14,8 +14,8 @@ import (
 	"github.com/raintank/fakemetrics/out/kafkamdm/keycache"
 	"github.com/raintank/met"
 	"github.com/raintank/worldping-api/pkg/log"
-	"gopkg.in/raintank/schema.v1"
-	"gopkg.in/raintank/schema.v1/msg"
+	"github.com/raintank/schema"
+	"github.com/raintank/schema/msg"
 )
 
 type KafkaMdm struct {

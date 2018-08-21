@@ -3,7 +3,7 @@ package keycache
 import (
 	"time"
 
-	schema "gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 // Cache is a single-tenant keycache

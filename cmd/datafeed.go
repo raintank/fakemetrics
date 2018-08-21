@@ -7,7 +7,7 @@ import (
 
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/worldping-api/pkg/log"
-	"gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 // slice of MetricData's, per orgid

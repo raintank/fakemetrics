@@ -23,7 +23,7 @@ import (
 	"time"
 
 	"github.com/raintank/worldping-api/pkg/log"
-	"gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 var agentsCmd = &cobra.Command{

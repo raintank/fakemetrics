@@ -22,7 +22,7 @@ import (
 	"github.com/raintank/fakemetrics/out"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 // storageconfCmd represents the storageconf command

@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	schema "gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 // SubKey is the last 15 bytes of a 16 byte Key

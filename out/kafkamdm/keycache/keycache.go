@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	schema "gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 // KeyCache tracks for all orgs, which keys have been seen, and when was the last time

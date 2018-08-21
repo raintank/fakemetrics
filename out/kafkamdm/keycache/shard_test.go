@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 func GetKey(suffix int) schema.Key {

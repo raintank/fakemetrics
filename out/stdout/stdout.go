@@ -8,7 +8,7 @@ import (
 
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"gopkg.in/raintank/schema.v1"
+	"github.com/raintank/schema"
 )
 
 type Stdout struct {
