@@ -6,8 +6,8 @@ import (
 	"time"
 
 	"github.com/raintank/fakemetrics/out"
-	"github.com/raintank/worldping-api/pkg/log"
 	"github.com/raintank/schema"
+	"github.com/raintank/worldping-api/pkg/log"
 )
 
 // slice of MetricData's, per orgid
@@ -53,16 +53,21 @@ func buildMetrics(orgs, mpo, period int) [][]schema.MetricData {
 // flush  in ms
 // offset in seconds
 func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, stopAtNow bool) {
-	if flush*speedup%(1000*period) != 0 {
-		panic(fmt.Sprintf("not a good fit. period*1000 should fit in flush*speedup"))
-	}
-
 	flushDur := time.Duration(flush) * time.Millisecond
 
+	if mpo*speedup%period != 0 {
+		panic("not a good fit. mpo*speedup must fit in period, to compute clean rate/s/org")
+	}
 	ratePerSPerOrg := mpo * speedup / period
+
+	if mpo*speedup*flush%(1000*period) != 0 {
+		panic("not a good fit. mpo*speedup*flush must fit in period, to compute clean rate/flush/org")
+	}
 	ratePerFlushPerOrg := ratePerSPerOrg * flush / 1000
+
 	ratePerS := ratePerSPerOrg * orgs
 	ratePerFlush := ratePerFlushPerOrg * orgs
+
 	fmt.Printf("params: orgs=%d, mpo=%d, period=%d, flush=%d, offset=%d, speedup=%d, stopAtNow=%t\n", orgs, mpo, period, flush, offset, speedup, stopAtNow)
 	fmt.Printf("per org:         each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)\n", flushDur, ratePerFlush, ratePerS, orgs*mpo)
 	fmt.Printf("times %4d orgs: each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)\n", orgs, flushDur, ratePerFlush, ratePerS, orgs*mpo)
