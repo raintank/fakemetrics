@@ -12,13 +12,13 @@ import (
 
 // slice of MetricData's, per orgid
 // with time and value not set yet.
-func buildMetrics(orgs, mpo, period int) [][]schema.MetricData {
+func buildMetrics(metricName string, orgs, mpo, period int) [][]schema.MetricData {
 	out := make([][]schema.MetricData, orgs)
 	for o := 0; o < orgs; o++ {
 		metrics := make([]schema.MetricData, mpo)
 		for m := 0; m < mpo; m++ {
 			var tags []string
-			name := fmt.Sprintf("some.id.of.a.metric.%d", m+1)
+			name := fmt.Sprintf("%s.%d", metricName, m+1)
 			if addTags {
 				tags = []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("id=%d", m+1)}
 			}
@@ -52,7 +52,7 @@ func buildMetrics(orgs, mpo, period int) [][]schema.MetricData {
 // period in seconds
 // flush  in ms
 // offset in seconds
-func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, stopAtNow bool) {
+func dataFeed(outs []out.Out, metricName string, orgs, mpo, period, flush, offset, speedup int, stopAtNow bool) {
 	flushDur := time.Duration(flush) * time.Millisecond
 
 	if mpo*speedup%period != 0 {
@@ -68,13 +68,13 @@ func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, sto
 	ratePerS := ratePerSPerOrg * orgs
 	ratePerFlush := ratePerFlushPerOrg * orgs
 
-	fmt.Printf("params: orgs=%d, mpo=%d, period=%d, flush=%d, offset=%d, speedup=%d, stopAtNow=%t\n", orgs, mpo, period, flush, offset, speedup, stopAtNow)
+	fmt.Printf("params: metricname=%s, orgs=%d, mpo=%d, period=%d, flush=%d, offset=%d, speedup=%d, stopAtNow=%t\n", metricName, orgs, mpo, period, flush, offset, speedup, stopAtNow)
 	fmt.Printf("per org:         each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)\n", flushDur, ratePerFlush, ratePerS, orgs*mpo)
 	fmt.Printf("times %4d orgs: each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)\n", orgs, flushDur, ratePerFlush, ratePerS, orgs*mpo)
 
 	tick := time.NewTicker(flushDur)
 
-	metrics := buildMetrics(orgs, mpo, period)
+	metrics := buildMetrics(metricName, orgs, mpo, period)
 
 	mp := int64(period)
 	ts := time.Now().Unix() - int64(offset) - mp

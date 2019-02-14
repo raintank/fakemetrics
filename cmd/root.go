@@ -77,12 +77,13 @@ var (
 	gnetKey          string
 	stdoutOut        bool
 
-	orgs      int
-	mpo       int
-	flushDur  time.Duration
-	periodDur time.Duration
-	flush     int // in ms
-	period    int // in s
+	metricName string
+	orgs       int
+	mpo        int
+	flushDur   time.Duration
+	periodDur  time.Duration
+	flush      int // in ms
+	period     int // in s
 
 	// global vars
 	outs          []out.Out

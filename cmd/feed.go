@@ -28,13 +28,14 @@ var feedCmd = &cobra.Command{
 		period = int(periodDur.Seconds())
 		flush = int(flushDur.Nanoseconds() / 1000 / 1000)
 		outs := getOutputs()
-		dataFeed(outs, orgs, mpo, period, flush, 0, 1, false)
+		dataFeed(outs, metricName, orgs, mpo, period, flush, 0, 1, false)
 
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(feedCmd)
+	feedCmd.Flags().StringVar(&metricName, "metricname", "some.id.of.a.metric", "the metric name to use")
 	feedCmd.Flags().IntVar(&orgs, "orgs", 1, "how many orgs to simulate")
 	feedCmd.Flags().IntVar(&mpo, "mpo", 100, "how many metrics per org to simulate")
 	feedCmd.Flags().DurationVar(&flushDur, "flush", time.Second, "how often to flush metrics")
