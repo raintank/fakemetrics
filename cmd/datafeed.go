@@ -20,7 +20,11 @@ func buildMetrics(metricName string, orgs, mpo, period int) [][]schema.MetricDat
 			var tags []string
 			name := fmt.Sprintf("%s.%d", metricName, m+1)
 			if addTags {
-				tags = []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("id=%d", m+1)}
+				if len(tagKeyValuePairs) > 0 {
+					tags = tagKeyValuePairs
+				} else {
+					tags = []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("id=%d", m+1)}
+				}
 			}
 			metrics[m] = schema.MetricData{
 				Name:     name,

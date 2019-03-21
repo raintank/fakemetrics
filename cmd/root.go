@@ -64,7 +64,8 @@ var (
 	statsdAddr string
 	statsdType string
 
-	addTags bool
+	addTags          bool
+	tagKeyValuePairs []string
 
 	kafkaMdmAddr     string
 	kafkaMdmTopic    string
@@ -101,6 +102,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&statsdType, "statsd-type", "standard", "statsd type: standard or datadog")
 
 	rootCmd.PersistentFlags().BoolVarP(&addTags, "add-tags", "t", true, "add tags to generated metrics")
+	rootCmd.PersistentFlags().StringSliceVar(&tagKeyValuePairs, "tags", []string{"sometag=somevalue", "anothertag=anothervalue", "lasttag=lastvalue"}, "A list of comma separated tags (i.e. 'tag1=value1, tag2=value2')")
 
 	rootCmd.PersistentFlags().StringVar(&kafkaMdmAddr, "kafka-mdm-addr", "", "kafka TCP address for MetricData-Msgp messages. e.g. localhost:9092")
 	rootCmd.PersistentFlags().StringVar(&kafkaMdmTopic, "kafka-mdm-topic", "mdm", "kafka topic for MetricData-Msgp messages")
