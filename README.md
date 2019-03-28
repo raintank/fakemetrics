@@ -27,23 +27,26 @@ Available Commands:
   version          Print the version number
 
 Flags:
-  -t, --add-tags                  add tags to generated metrics (default true)
-      --carbon-addr string        carbon TCP address. e.g. localhost:2003
-      --config string             config file (default is $HOME/.fakemetrics.yaml)
-      --gnet-addr string          gnet address. e.g. http://localhost:8081
-      --gnet-key string           gnet api key
-  -h, --help                      help for fakemetrics
-      --kafka-comp string         compression: none|gzip|snappy (default "snappy")
-      --kafka-mdam-addr string    kafka TCP address for MetricDataArray-Msgp messages. e.g. localhost:9092
-      --kafka-mdm-addr string     kafka TCP address for MetricData-Msgp messages. e.g. localhost:9092
-      --kafka-mdm-topic string    kafka topic for MetricData-Msgp messages (default "mdm")
-      --kafka-mdm-v2              enable MetricPoint optimization (send MetricData first, then optimized MetricPoint payloads) (default true)
-      --listen string             http listener address for pprof. (default ":6764")
-      --log-level int             log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL (default 2)
-      --partition-scheme string   method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries|lastNum) (default "bySeries")
-      --statsd-addr string        statsd TCP address. e.g. 'localhost:8125'
-      --statsd-type string        statsd type: standard or datadog (default "standard")
-      --stdout                    enable emitting metrics to stdout
+  -t, --add-tags                     add tags to generated metrics (default false)
+      --carbon-addr string           carbon TCP address. e.g. localhost:2003
+      --config string                config file (default is $HOME/.fakemetrics.yaml)
+      --custom-tags strings          A list of comma separated tags (i.e. "tag1=value1,tag2=value2")(default empty)
+      --gnet-addr string             gnet address. e.g. http://localhost:8081
+      --gnet-key string              gnet api key
+  -h, --help                         help for fakemetrics
+      --kafka-comp string            compression: none|gzip|snappy (default "snappy")
+      --kafka-mdam-addr string       kafka TCP address for MetricDataArray-Msgp messages. e.g. localhost:9092
+      --kafka-mdm-addr string        kafka TCP address for MetricData-Msgp messages. e.g. localhost:9092
+      --kafka-mdm-topic string       kafka topic for MetricData-Msgp messages (default "mdm")
+      --kafka-mdm-v2                 enable MetricPoint optimization (send MetricData first, then optimized MetricPoint payloads) (default true)
+      --listen string                http listener address for pprof. (default ":6764")
+      --log-level int                log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL (default 2)
+      --num-unique-custom-tags int   a number between 0 and the length of custom-tags. when using custom-tags this will make the tags unique (default 0)
+      --num-unique-tags int          a number between 0 and 10. when using add-tags this will make the tags unique (default 0)
+      --partition-scheme string      method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries|lastNum) (default "bySeries")
+      --statsd-addr string           statsd TCP address. e.g. 'localhost:8125'
+      --statsd-type string           statsd type: standard or datadog (default "standard")
+      --stdout                       enable emitting metrics to stdout
 
 Use "fakemetrics [command] --help" for more information about a command.
 
@@ -55,6 +58,30 @@ Generate a real-time load of 40k metrics/s to kafka, metrics 1 second apart and 
 
 ```
 fakemetrics feed --kafka-mdm-addr localhost:9092
+```
+
+Generate a real-time load of 40k metrics/s to kafka, metrics 1 second apart and flushed every second. Metrics all have tags.
+
+```
+fakemetrics feed --kafka-mdm-addr localhost:9092 --add-tags=true
+```
+
+Using unique values for 4 of the tags
+
+```
+fakemetrics feed --kafka-mdm-addr localhost:9092 --add-tags=true --num-unique-tags=4
+```
+
+Using custom tags
+
+```
+fakemtrics feed --kafka-mdm-addr localhost:9092 --custom-tags="key1=value1,key2=value2,key3=value3"
+```
+
+Using unique values for 1 of the custom tags
+
+```
+fakemetrics feed --kafka-mdm-addr localhost:9092 --custom-tags="key1=value1,key2=value2,key3=value3" --num-unique-custom-tags=1
 ```
 
 Generate a stream of historical data to kafka for 4 different organisations, 100 metrics each
