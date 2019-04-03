@@ -64,7 +64,10 @@ var (
 	statsdAddr string
 	statsdType string
 
-	addTags bool
+	addTags             bool
+	numUniqueTags       int
+	customTags          []string
+	numUniqueCustomTags int
 
 	kafkaMdmAddr     string
 	kafkaMdmTopic    string
@@ -100,7 +103,10 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&statsdAddr, "statsd-addr", "", "statsd TCP address. e.g. 'localhost:8125'")
 	rootCmd.PersistentFlags().StringVar(&statsdType, "statsd-type", "standard", "statsd type: standard or datadog")
 
-	rootCmd.PersistentFlags().BoolVarP(&addTags, "add-tags", "t", true, "add tags to generated metrics")
+	rootCmd.PersistentFlags().BoolVarP(&addTags, "add-tags", "t", false, "add the built-in tags to generated metrics (default false)")
+	rootCmd.PersistentFlags().IntVar(&numUniqueTags, "num-unique-tags", 1, "a number between 0 and 10. when using add-tags this will add a unique number to some built-in tags (default 1)")
+	rootCmd.PersistentFlags().StringSliceVar(&customTags, "custom-tags", []string{}, "A list of comma separated tags (i.e. \"tag1=value1,tag2=value2\")(default empty) conflicts with add-tags")
+	rootCmd.PersistentFlags().IntVar(&numUniqueCustomTags, "num-unique-custom-tags", 0, "a number between 0 and the length of custom-tags. when using custom-tags this will make the tags unique (default 0)")
 
 	rootCmd.PersistentFlags().StringVar(&kafkaMdmAddr, "kafka-mdm-addr", "", "kafka TCP address for MetricData-Msgp messages. e.g. localhost:9092")
 	rootCmd.PersistentFlags().StringVar(&kafkaMdmTopic, "kafka-mdm-topic", "mdm", "kafka topic for MetricData-Msgp messages")

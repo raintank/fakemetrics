@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"math/rand"
+	"strconv"
 	"time"
 
 	"github.com/raintank/fakemetrics/out"
@@ -19,8 +20,49 @@ func buildMetrics(metricName string, orgs, mpo, period int) [][]schema.MetricDat
 		for m := 0; m < mpo; m++ {
 			var tags []string
 			name := fmt.Sprintf("%s.%d", metricName, m+1)
+
+			localTags := []string{
+				"secondkey=anothervalue",
+				"thirdkey=onemorevalue",
+				"region=west",
+				"os=ubuntu",
+				"anothertag=somelongervalue",
+				"manymoreother=lotsoftagstointern",
+				"afewmoretags=forgoodmeasure",
+				"onetwothreefourfivesix=seveneightnineten",
+				"lotsandlotsoftags=morefunforeveryone",
+				"goodforpeoplewhojustusetags=forbasicallyeverything",
+			}
+
+			if len(customTags) > 0 {
+				if numUniqueCustomTags > 0 {
+					var j int
+					for j = 0; j < numUniqueCustomTags; j++ {
+						tags = append(tags, customTags[j]+strconv.Itoa(m+1))
+					}
+					for j < len(customTags) {
+						tags = append(tags, customTags[j])
+						j++
+					}
+
+				} else {
+					tags = customTags
+				}
+			}
+
 			if addTags {
-				tags = []string{"some=tag", fmt.Sprintf("name=%s", name), fmt.Sprintf("id=%d", m+1)}
+				if numUniqueTags > 0 {
+					var j int
+					for j = 0; j < numUniqueTags; j++ {
+						tags = append(tags, localTags[j]+strconv.Itoa(m+1))
+					}
+					for j < len(localTags) {
+						tags = append(tags, localTags[j])
+						j++
+					}
+				} else {
+					tags = localTags
+				}
 			}
 			metrics[m] = schema.MetricData{
 				Name:     name,
@@ -64,6 +106,18 @@ func dataFeed(outs []out.Out, metricName string, orgs, mpo, period, flush, offse
 		panic("not a good fit. mpo*speedup*flush must fit in period, to compute clean rate/flush/org")
 	}
 	ratePerFlushPerOrg := ratePerSPerOrg * flush / 1000
+
+	if addTags && len(customTags) > 0 {
+		panic("cannot use regular-tags and custom-tags at the same time")
+	}
+
+	if numUniqueTags > 10 || numUniqueTags < 0 {
+		panic(fmt.Sprintf("num-unique-tags must be a value between 0 and 10, you entered %d", numUniqueTags))
+	}
+
+	if numUniqueCustomTags > len(customTags) || numUniqueCustomTags < 0 {
+		panic(fmt.Sprintf("num-unique-custom-tags must be a value between 0 and %d, you entered %d", len(customTags), numUniqueCustomTags))
+	}
 
 	ratePerS := ratePerSPerOrg * orgs
 	ratePerFlush := ratePerFlushPerOrg * orgs
