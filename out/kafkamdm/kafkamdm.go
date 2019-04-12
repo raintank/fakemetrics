@@ -13,9 +13,9 @@ import (
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/fakemetrics/out/kafkamdm/keycache"
 	"github.com/raintank/met"
-	"github.com/raintank/worldping-api/pkg/log"
 	"github.com/raintank/schema"
 	"github.com/raintank/schema/msg"
+	log "github.com/sirupsen/logrus"
 )
 
 type KafkaMdm struct {
@@ -159,7 +159,7 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 		if k.partScheme == "lastNum" {
 			part, err := k.lmPart.Partition(metric, 0)
 			if err != nil {
-				log.Fatal(4, "Failed to get partition for metric. %s", err)
+				return fmt.Errorf("Failed to get partition for metric. %s", err)
 			}
 
 			payload[i] = &sarama.ProducerMessage{
@@ -170,7 +170,7 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 		} else {
 			key, err := k.part.GetPartitionKey(metric, nil)
 			if err != nil {
-				log.Fatal(4, "Failed to get partition for metric. %s", err)
+				return fmt.Errorf("Failed to get partition for metric. %s", err)
 			}
 
 			payload[i] = &sarama.ProducerMessage{
@@ -190,7 +190,7 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 		k.PublishErrors.Inc(1)
 		if errors, ok := err.(sarama.ProducerErrors); ok {
 			for i := 0; i < 10 && i < len(errors); i++ {
-				log.Error(4, "ProducerError %d/%d: %s", i, len(errors), errors[i].Error())
+				log.Errorf("ProducerError %d/%d: %s", i, len(errors), errors[i].Error())
 			}
 		}
 		return err
