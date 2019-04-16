@@ -101,9 +101,11 @@ func generateData(outs []out.Out) {
 			timestamp = 0 // 0 or >= math.MaxInt32
 		} else if flags.outOfOrder {
 			n := int64(3)
-			// every n seconds, emit data points in the past for n seconds
+			// invert in time n data points with the following n data points
 			if timestamp%(2*n) < n {
 				timestamp -= n
+			} else {
+				timestamp += n
 			}
 		} else if flags.duplicate {
 			if md.Time != 0 {
