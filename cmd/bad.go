@@ -31,7 +31,7 @@ var flags struct {
 	invalidName      bool
 	invalidMtype     bool
 	invalidTags      bool
-	outOfOrder       bool
+	outOfOrder       uint
 	duplicate        bool
 }
 
@@ -57,7 +57,8 @@ func init() {
 	badCmd.Flags().BoolVar(&flags.invalidName, "invalid-name", false, "use an invalid name")
 	badCmd.Flags().BoolVar(&flags.invalidMtype, "invalid-mtype", false, "use an invalid mtype")
 	badCmd.Flags().BoolVar(&flags.invalidTags, "invalid-tags", false, "use an invalid tag")
-	badCmd.Flags().BoolVar(&flags.outOfOrder, "out-of-order", false, "send data in the wrong order")
+	badCmd.Flags().UintVar(&flags.outOfOrder, "out-of-order", 0, "send data periodically in an inverted order (optionally specify number of inverted data points per period)")
+	badCmd.Flag("out-of-order").NoOptDefVal = "5"
 	badCmd.Flags().BoolVar(&flags.duplicate, "duplicate", false, "send duplicate data")
 }
 
@@ -99,8 +100,8 @@ func generateData(outs []out.Out) {
 		timestamp := ts.Unix()
 		if flags.invalidTimestamp {
 			timestamp = 0 // 0 or >= math.MaxInt32
-		} else if flags.outOfOrder {
-			n := int64(3)
+		} else if flags.outOfOrder > 0 {
+			n := int64(flags.outOfOrder)
 			// invert in time n data points with the following n data points
 			if timestamp%(2*n) < n {
 				timestamp -= n
