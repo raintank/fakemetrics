@@ -15,7 +15,6 @@
 package cmd
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/raintank/fakemetrics/out"
@@ -115,7 +114,6 @@ func generateData(outs []out.Out) {
 		}
 		md.Time = timestamp
 		md.Value = float64(2.0)
-		fmt.Printf("Sending MetricData: %+v\n", md)
 		for _, o := range outs {
 			o.Flush(sl)
 		}
