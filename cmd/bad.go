@@ -51,14 +51,14 @@ var badCmd = &cobra.Command{
 
 func init() {
 	rootCmd.AddCommand(badCmd)
-	badCmd.PersistentFlags().BoolVar(&flags.invalidTimestamp, "invalid-timestamp", false, "use an invalid timestamp")
-	badCmd.PersistentFlags().BoolVar(&flags.invalidInterval, "invalid-interval", false, "use an invalid interval")
-	badCmd.PersistentFlags().BoolVar(&flags.invalidOrgID, "invalid-orgid", false, "use an invalid orgId")
-	badCmd.PersistentFlags().BoolVar(&flags.invalidName, "invalid-name", false, "use an invalid name")
-	badCmd.PersistentFlags().BoolVar(&flags.invalidMtype, "invalid-mtype", false, "use an invalid mtype")
-	badCmd.PersistentFlags().BoolVar(&flags.invalidTags, "invalid-tags", false, "use an invalid tag")
-	badCmd.PersistentFlags().BoolVar(&flags.outOfOrder, "out-of-order", false, "send data in the wrong order")
-	badCmd.PersistentFlags().BoolVar(&flags.duplicate, "duplicate", false, "send duplicate data")
+	badCmd.Flags().BoolVar(&flags.invalidTimestamp, "invalid-timestamp", false, "use an invalid timestamp")
+	badCmd.Flags().BoolVar(&flags.invalidInterval, "invalid-interval", false, "use an invalid interval")
+	badCmd.Flags().BoolVar(&flags.invalidOrgID, "invalid-orgid", false, "use an invalid orgId")
+	badCmd.Flags().BoolVar(&flags.invalidName, "invalid-name", false, "use an invalid name")
+	badCmd.Flags().BoolVar(&flags.invalidMtype, "invalid-mtype", false, "use an invalid mtype")
+	badCmd.Flags().BoolVar(&flags.invalidTags, "invalid-tags", false, "use an invalid tag")
+	badCmd.Flags().BoolVar(&flags.outOfOrder, "out-of-order", false, "send data in the wrong order")
+	badCmd.Flags().BoolVar(&flags.duplicate, "duplicate", false, "send duplicate data")
 }
 
 func generateData(outs []out.Out) {
