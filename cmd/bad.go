@@ -16,47 +16,103 @@ package cmd
 
 import (
 	"fmt"
-	"log"
 	"time"
 
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/schema"
+	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
 )
 
+var flags struct {
+	invalidTimestamp bool
+	invalidInterval  bool
+	invalidOrgID     bool
+	invalidName      bool
+	invalidMtype     bool
+	invalidTags      bool
+	outOfOrder       bool
+	duplicate        bool
+}
+
 var badCmd = &cobra.Command{
 	Use:   "bad",
-	Short: "Send bad metric data",
+	Short: "Sends out invalid/out-of-order/duplicate metric data",
 	Run: func(cmd *cobra.Command, args []string) {
 		initStats(true, "bad")
 		outs := getOutputs()
 		if len(outs) == 0 {
 			log.Fatal("need to define an output")
 		}
-		bad(outs)
+
+		generateData(outs)
 	},
 }
 
 func init() {
 	rootCmd.AddCommand(badCmd)
+	badCmd.PersistentFlags().BoolVar(&flags.invalidTimestamp, "invalid-timestamp", false, "use an invalid timestamp")
+	badCmd.PersistentFlags().BoolVar(&flags.invalidInterval, "invalid-interval", false, "use an invalid interval")
+	badCmd.PersistentFlags().BoolVar(&flags.invalidOrgID, "invalid-orgid", false, "use an invalid orgId")
+	badCmd.PersistentFlags().BoolVar(&flags.invalidName, "invalid-name", false, "use an invalid name")
+	badCmd.PersistentFlags().BoolVar(&flags.invalidMtype, "invalid-mtype", false, "use an invalid mtype")
+	badCmd.PersistentFlags().BoolVar(&flags.invalidTags, "invalid-tags", false, "use an invalid tag")
+	badCmd.PersistentFlags().BoolVar(&flags.outOfOrder, "out-of-order", false, "send data in the wrong order")
+	badCmd.PersistentFlags().BoolVar(&flags.duplicate, "duplicate", false, "send duplicate data")
 }
 
-func bad(outs []out.Out) {
+func generateData(outs []out.Out) {
 	md := &schema.MetricData{
-		Name:     ".foo.bar",
+		Name:     "some.id.of.a.metric.0",
 		OrgId:    1,
 		Interval: 1,
 		Unit:     "s",
 		Mtype:    "gauge",
 		Tags:     nil,
 	}
+
+	if flags.invalidInterval {
+		md.Interval = 0 // 0 or >= math.MaxInt32
+	}
+
+	if flags.invalidOrgID {
+		md.OrgId = 0
+	}
+
+	if flags.invalidName {
+		md.Name = ""
+	}
+
+	if flags.invalidMtype {
+		md.Mtype = "invalid Mtype"
+	}
+
+	if flags.invalidTags {
+		md.Tags = []string{"==invalid tags,#4561=="}
+	}
+
 	md.SetId()
 	sl := []*schema.MetricData{md}
+
 	tick := time.NewTicker(time.Second)
 	for ts := range tick.C {
-		fmt.Println("doing", ts)
-		md.Time = ts.Unix()
-		md.Value = float64(md.Time)
+		timestamp := ts.Unix()
+		if flags.invalidTimestamp {
+			timestamp = 0 // 0 or >= math.MaxInt32
+		} else if flags.outOfOrder {
+			n := int64(3)
+			// every n seconds, emit data points in the past for n seconds
+			if timestamp%(2*n) < n {
+				timestamp -= n
+			}
+		} else if flags.duplicate {
+			if md.Time != 0 {
+				timestamp = md.Time
+			}
+		}
+		md.Time = timestamp
+		md.Value = float64(2.0)
+		fmt.Printf("Sending MetricData: %+v\n", md)
 		for _, o := range outs {
 			o.Flush(sl)
 		}
