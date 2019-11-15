@@ -170,7 +170,7 @@ func (k *KafkaMdm) Flush(metrics []*schema.MetricData) error {
 
 	}
 	if notOk > 0 {
-		fmt.Println(preFlush, notOk, "metrics could not be sent as v2 MetricPoint")
+		log.Info(notOk, "metrics could not be sent as v2 MetricPoint")
 	}
 	prePub := time.Now()
 	err := k.client.SendMessages(payload)
