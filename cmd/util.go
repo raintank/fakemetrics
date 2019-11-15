@@ -15,6 +15,8 @@
 package cmd
 
 import (
+	"time"
+
 	"github.com/raintank/worldping-api/pkg/log"
 
 	"github.com/raintank/fakemetrics/out"
@@ -63,7 +65,7 @@ func getOutputs() []out.Out {
 		if kafkaMdmTopic == "" {
 			log.Fatal(4, "kafka-mdm needs the topic to be set")
 		}
-		o, err := kafkamdm.New(kafkaMdmTopic, []string{kafkaMdmAddr}, kafkaCompression, stats, partitionScheme, kafkaMdmV2)
+		o, err := kafkamdm.New(kafkaMdmTopic, []string{kafkaMdmAddr}, kafkaCompression, 30*time.Second, stats, partitionScheme, kafkaMdmV2)
 		if err != nil {
 			log.Fatal(4, "failed to create kafka-mdm output. %s", err)
 		}

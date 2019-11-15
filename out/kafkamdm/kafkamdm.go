@@ -54,7 +54,7 @@ func (p *LastNumPartitioner) GetPartitionKey(m schema.PartitionedMetric, b []byt
 	return m.KeyBySeries(b), nil
 }
 
-func New(topic string, brokers []string, codec string, stats met.Backend, partitionScheme string, v2 bool) (*KafkaMdm, error) {
+func New(topic string, brokers []string, codec string, timeout time.Duration, stats met.Backend, partitionScheme string, v2 bool) (*KafkaMdm, error) {
 	// We are looking for strong consistency semantics.
 	// Because we don't change the flush settings, sarama will try to produce messages
 	// as fast as possible to keep latency low.
@@ -63,6 +63,11 @@ func New(topic string, brokers []string, codec string, stats met.Backend, partit
 	config.Producer.RequiredAcks = sarama.WaitForAll // Wait for all in-sync replicas to ack the message
 	config.Producer.Retry.Max = 10                   // Retry up to 10 times to produce the message
 	config.Producer.Compression = out.GetCompression(codec)
+
+	config.Net.DialTimeout = timeout
+	config.Net.ReadTimeout = timeout
+	config.Net.WriteTimeout = timeout
+
 	err := config.Validate()
 	if err != nil {
 		return nil, err
