@@ -3,7 +3,7 @@ package keycache
 import (
 	"time"
 
-	"github.com/raintank/schema"
+	"github.com/grafana/metrictank/schema"
 )
 
 // Cache is a single-tenant keycache

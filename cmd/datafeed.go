@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/grafana/metrictank/schema"
 	"github.com/raintank/fakemetrics/out"
-	"github.com/raintank/schema"
 	"github.com/raintank/worldping-api/pkg/log"
 )
 

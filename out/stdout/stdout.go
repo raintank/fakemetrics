@@ -6,9 +6,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/grafana/metrictank/schema"
 	"github.com/raintank/fakemetrics/out"
 	"github.com/raintank/met"
-	"github.com/raintank/schema"
 )
 
 type Stdout struct {

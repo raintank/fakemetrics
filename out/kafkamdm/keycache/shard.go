@@ -4,7 +4,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/raintank/schema"
+	"github.com/grafana/metrictank/schema"
 )
 
 // SubKey is the last 15 bytes of a 16 byte Key

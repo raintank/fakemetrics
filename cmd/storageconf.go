@@ -19,10 +19,10 @@ import (
 
 	"time"
 
+	"github.com/grafana/metrictank/schema"
 	"github.com/raintank/fakemetrics/out"
 	log "github.com/sirupsen/logrus"
 	"github.com/spf13/cobra"
-	"github.com/raintank/schema"
 )
 
 // storageconfCmd represents the storageconf command
