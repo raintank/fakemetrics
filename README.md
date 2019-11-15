@@ -20,6 +20,7 @@ Available Commands:
   agents           Mimic independent agents
   agginput         A particular workload good to test performance of carbon-relay-ng aggregators
   backfill         backfills old data and stops when 'now' is reached
+  bad              Sends out invalid/out-of-order/duplicate metric data
   feed             Publishes a realtime feed of data
   help             Help about any command
   resolutionchange Sends out metric with changing intervals, time range 24hours
@@ -27,10 +28,10 @@ Available Commands:
   version          Print the version number
 
 Flags:
-  -t, --add-tags                     add tags to generated metrics (default false)
+  -t, --add-tags                     add the built-in tags to generated metrics (default false)
       --carbon-addr string           carbon TCP address. e.g. localhost:2003
       --config string                config file (default is $HOME/.fakemetrics.yaml)
-      --custom-tags strings          A list of comma separated tags (i.e. "tag1=value1,tag2=value2")(default empty)
+      --custom-tags strings          A list of comma separated tags (i.e. "tag1=value1,tag2=value2")(default empty) conflicts with add-tags
       --gnet-addr string             gnet address. e.g. http://localhost:8081
       --gnet-key string              gnet api key
   -h, --help                         help for fakemetrics
@@ -42,8 +43,8 @@ Flags:
       --listen string                http listener address for pprof. (default ":6764")
       --log-level int                log level. 0=TRACE|1=DEBUG|2=INFO|3=WARN|4=ERROR|5=CRITICAL|6=FATAL (default 2)
       --num-unique-custom-tags int   a number between 0 and the length of custom-tags. when using custom-tags this will make the tags unique (default 0)
-      --num-unique-tags int          a number between 0 and 10. when using add-tags this will make the tags unique (default 0)
-      --partition-scheme string      method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries|lastNum) (default "bySeries")
+      --num-unique-tags int          a number between 0 and 10. when using add-tags this will add a unique number to some built-in tags (default 1)
+      --partition-scheme string      method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries|bySeriesWithTags|bySeriesWithTagsFnv|lastNum) (default "bySeries")
       --statsd-addr string           statsd TCP address. e.g. 'localhost:8125'
       --statsd-type string           statsd type: standard or datadog (default "standard")
       --stdout                       enable emitting metrics to stdout
