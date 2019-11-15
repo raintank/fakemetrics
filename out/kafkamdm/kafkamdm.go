@@ -39,10 +39,10 @@ type LastNumPartitioner struct{}
 func (p *LastNumPartitioner) Partition(m schema.PartitionedMetric, numPartitions int32) (int32, error) {
 	name := m.KeyBySeries(nil)
 	index := bytes.LastIndexByte(name, '.')
-	if index < 0 {
+	if index < 0 || index == len(name)-1 {
 		return 0, fmt.Errorf("invalid metricname for LastNumPartitioner: '%s'", name)
 	}
-	part, err := strconv.ParseInt(string(name[index:]), 10, 32)
+	part, err := strconv.ParseInt(string(name[index+1:]), 10, 32)
 	if err != nil {
 		return 0, fmt.Errorf("invalid metricname for LastNumPartitioner: '%s'", name)
 	}
