@@ -13,7 +13,7 @@ import (
 
 // slice of MetricData's, per orgid
 // with time and value not set yet.
-func buildMetrics(metricName string, orgs, mpo, period int) [][]schema.MetricData {
+func buildMetrics(metricName string, orgs, mpo, period, numHostTags int) [][]schema.MetricData {
 	out := make([][]schema.MetricData, orgs)
 	for o := 0; o < orgs; o++ {
 		metrics := make([]schema.MetricData, mpo)
@@ -62,6 +62,10 @@ func buildMetrics(metricName string, orgs, mpo, period int) [][]schema.MetricDat
 					}
 				} else {
 					tags = localTags
+				}
+
+				if numHostTags > 0 {
+					tags = append(tags, fmt.Sprintf("host=%d", m%numHostTags))
 				}
 			}
 			metrics[m] = schema.MetricData{
@@ -128,7 +132,7 @@ func dataFeed(outs []out.Out, metricName string, orgs, mpo, period, flush, offse
 
 	tick := time.NewTicker(flushDur)
 
-	metrics := buildMetrics(metricName, orgs, mpo, period)
+	metrics := buildMetrics(metricName, orgs, mpo, period, numHostTags)
 
 	mp := int64(period)
 	ts := time.Now().Unix() - int64(offset) - mp
