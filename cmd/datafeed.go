@@ -13,74 +13,70 @@ import (
 
 // slice of MetricData's, per orgid
 // with time and value not set yet.
-func buildMetrics(metricName string, orgs, mpo, period, numHostTags int) [][]schema.MetricData {
-	out := make([][]schema.MetricData, orgs)
-	for o := 0; o < orgs; o++ {
-		metrics := make([]schema.MetricData, mpo)
-		for m := 0; m < mpo; m++ {
-			var tags []string
-			name := fmt.Sprintf("%s.%d", metricName, m+1)
-
-			localTags := []string{
-				"secondkey=anothervalue",
-				"thirdkey=onemorevalue",
-				"region=west",
-				"os=ubuntu",
-				"anothertag=somelongervalue",
-				"manymoreother=lotsoftagstointern",
-				"afewmoretags=forgoodmeasure",
-				"onetwothreefourfivesix=seveneightnineten",
-				"lotsandlotsoftags=morefunforeveryone",
-				"goodforpeoplewhojustusetags=forbasicallyeverything",
-			}
-
-			if len(customTags) > 0 {
-				if numUniqueCustomTags > 0 {
-					var j int
-					for j = 0; j < numUniqueCustomTags; j++ {
-						tags = append(tags, customTags[j]+strconv.Itoa(m+1))
-					}
-					for j < len(customTags) {
-						tags = append(tags, customTags[j])
-						j++
-					}
-
-				} else {
-					tags = customTags
-				}
-			}
-
-			if addTags {
-				if numUniqueTags > 0 {
-					var j int
-					for j = 0; j < numUniqueTags; j++ {
-						tags = append(tags, localTags[j]+strconv.Itoa(m+1))
-					}
-					for j < len(localTags) {
-						tags = append(tags, localTags[j])
-						j++
-					}
-				} else {
-					tags = localTags
-				}
-
-				if numHostTags > 0 {
-					tags = append(tags, fmt.Sprintf("host=%d", m%numHostTags))
-				}
-			}
-			metrics[m] = schema.MetricData{
-				Name:     name,
-				OrgId:    o + 1,
-				Interval: period,
-				Unit:     "ms",
-				Mtype:    "gauge",
-				Tags:     tags,
-			}
-			metrics[m].SetId()
-		}
-		out[o] = metrics
+func buildMetrics(metricName string, orgs, mpo, period, numHostTags int) func(int, int) schema.MetricData {
+	localTags := []string{
+		"secondkey=anothervalue",
+		"thirdkey=onemorevalue",
+		"region=west",
+		"os=ubuntu",
+		"anothertag=somelongervalue",
+		"manymoreother=lotsoftagstointern",
+		"afewmoretags=forgoodmeasure",
+		"onetwothreefourfivesix=seveneightnineten",
+		"lotsandlotsoftags=morefunforeveryone",
+		"goodforpeoplewhojustusetags=forbasicallyeverything",
 	}
-	return out
+
+	return func(o, m int) schema.MetricData {
+		var md schema.MetricData
+		var tags []string
+
+		md.Name = fmt.Sprintf("%s.%d", metricName, m+1)
+
+		if len(customTags) > 0 {
+			if numUniqueCustomTags > 0 {
+				var j int
+				for j = 0; j < numUniqueCustomTags; j++ {
+					tags = append(tags, customTags[j]+strconv.Itoa(m+1))
+				}
+				for j < len(customTags) {
+					tags = append(tags, customTags[j])
+					j++
+				}
+
+			} else {
+				tags = customTags
+			}
+		}
+
+		if addTags {
+			if numUniqueTags > 0 {
+				var j int
+				for j = 0; j < numUniqueTags; j++ {
+					tags = append(tags, localTags[j]+strconv.Itoa(m+1))
+				}
+				for j < len(localTags) {
+					tags = append(tags, localTags[j])
+					j++
+				}
+			} else {
+				tags = localTags
+			}
+
+			if numHostTags > 0 {
+				tags = append(tags, fmt.Sprintf("host=%d", m%numHostTags))
+			}
+		}
+
+		md.OrgId = o + 1
+		md.Interval = period
+		md.Unit = "ms"
+		md.Mtype = "gauge"
+		md.Tags = tags
+		md.SetId()
+
+		return md
+	}
 }
 
 // examples (everything perOrg)
@@ -153,7 +149,7 @@ func dataFeed(outs []out.Out, metricName string, orgs, mpo, period, flush, offse
 		now := nowT.Unix()
 		var data []*schema.MetricData
 
-		for o := 0; o < len(metrics); o++ {
+		for o := 0; o < orgs; o++ {
 			// as seen above, we need to flush ratePerFlushPerOrg
 			// respecting where a previous flush left off, we need to start from
 			// the point after it.
@@ -164,7 +160,7 @@ func dataFeed(outs []out.Out, metricName string, orgs, mpo, period, flush, offse
 				// the main thing we need to watch out for here is to bump the timestamp
 				// is properly bumped in both cases
 				m = (startFrom + num) % mpo
-				metricData := metrics[o][m]
+				metricData := metrics(o, m)
 				// not the very first metric, but we "cycled back" to reusing metrics
 				// we already sent, so we must increase the timestamp
 				if m == 0 {
