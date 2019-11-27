@@ -22,8 +22,8 @@ import (
 
 	"time"
 
+	"github.com/grafana/metrictank/schema"
 	"github.com/raintank/worldping-api/pkg/log"
-	"github.com/raintank/schema"
 )
 
 var agentsCmd = &cobra.Command{

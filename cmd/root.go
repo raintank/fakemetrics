@@ -104,7 +104,7 @@ func init() {
 	rootCmd.PersistentFlags().StringVar(&statsdType, "statsd-type", "standard", "statsd type: standard or datadog")
 
 	rootCmd.PersistentFlags().BoolVarP(&addTags, "add-tags", "t", false, "add the built-in tags to generated metrics (default false)")
-	rootCmd.PersistentFlags().IntVar(&numUniqueTags, "num-unique-tags", 1, "a number between 0 and 10. when using add-tags this will add a unique number to some built-in tags (default 1)")
+	rootCmd.PersistentFlags().IntVar(&numUniqueTags, "num-unique-tags", 1, "a number between 0 and 10. when using add-tags this will add a unique number to some built-in tags")
 	rootCmd.PersistentFlags().StringSliceVar(&customTags, "custom-tags", []string{}, "A list of comma separated tags (i.e. \"tag1=value1,tag2=value2\")(default empty) conflicts with add-tags")
 	rootCmd.PersistentFlags().IntVar(&numUniqueCustomTags, "num-unique-custom-tags", 0, "a number between 0 and the length of custom-tags. when using custom-tags this will make the tags unique (default 0)")
 
@@ -113,7 +113,7 @@ func init() {
 	rootCmd.PersistentFlags().BoolVar(&kafkaMdmV2, "kafka-mdm-v2", true, "enable MetricPoint optimization (send MetricData first, then optimized MetricPoint payloads)")
 	rootCmd.PersistentFlags().StringVar(&kafkaMdamAddr, "kafka-mdam-addr", "", "kafka TCP address for MetricDataArray-Msgp messages. e.g. localhost:9092")
 	rootCmd.PersistentFlags().StringVar(&kafkaCompression, "kafka-comp", "snappy", "compression: none|gzip|snappy")
-	rootCmd.PersistentFlags().StringVar(&partitionScheme, "partition-scheme", "bySeries", "method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries|lastNum)")
+	rootCmd.PersistentFlags().StringVar(&partitionScheme, "partition-scheme", "bySeries", "method used for partitioning metrics (kafka-mdm-only). (byOrg|bySeries|bySeriesWithTags|bySeriesWithTagsFnv|lastNum)")
 	rootCmd.PersistentFlags().StringVar(&carbonAddr, "carbon-addr", "", "carbon TCP address. e.g. localhost:2003")
 	rootCmd.PersistentFlags().StringVar(&gnetAddr, "gnet-addr", "", "gnet address. e.g. http://localhost:8081")
 	rootCmd.PersistentFlags().StringVar(&gnetKey, "gnet-key", "", "gnet api key")

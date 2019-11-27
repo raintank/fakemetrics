@@ -4,7 +4,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/raintank/schema"
+	"github.com/grafana/metrictank/schema"
 )
 
 func GetKey(suffix int) schema.Key {
