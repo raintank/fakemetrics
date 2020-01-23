@@ -140,12 +140,12 @@ func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, sto
 	flushDur := time.Duration(flush) * time.Millisecond
 
 	if mpo*speedup%period != 0 {
-		panic("not a good fit. mpo*speedup must fit in period, to compute clean rate/s/org")
+		panic("not a good fit. mpo*speedup must divide by period, to compute clean rate/s/org")
 	}
 	ratePerSPerOrg := mpo * speedup / period
 
 	if mpo*speedup*flush%(1000*period) != 0 {
-		panic("not a good fit. mpo*speedup*flush must fit in period, to compute clean rate/flush/org")
+		panic("not a good fit. mpo*speedup*flush must divide by period, to compute clean rate/flush/org")
 	}
 	ratePerFlushPerOrg := ratePerSPerOrg * flush / 1000
 
