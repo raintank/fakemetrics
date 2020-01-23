@@ -17,6 +17,35 @@ type MetricPayloadBuilder interface {
 	Build(orgs, mpo, period int) [][]schema.MetricData
 }
 
+// uses no tags
+type SimpleBuilder struct {
+	metricName string
+}
+
+func (tb SimpleBuilder) Info() string {
+	return "metricName=" + tb.metricName
+}
+
+func (tb SimpleBuilder) Build(orgs, mpo, period int) [][]schema.MetricData {
+	out := make([][]schema.MetricData, orgs)
+	for o := 0; o < orgs; o++ {
+		metrics := make([]schema.MetricData, mpo)
+		for m := 0; m < mpo; m++ {
+			name := fmt.Sprintf("%s.%d", tb.metricName, m+1)
+			metrics[m] = schema.MetricData{
+				Name:     name,
+				OrgId:    o + 1,
+				Interval: period,
+				Unit:     "ms",
+				Mtype:    "gauge",
+			}
+			metrics[m].SetId()
+		}
+		out[o] = metrics
+	}
+	return out
+}
+
 // uses tags
 type TaggedBuilder struct {
 	metricName string
@@ -135,9 +164,13 @@ func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, sto
 	ratePerS := ratePerSPerOrg * orgs
 	ratePerFlush := ratePerFlushPerOrg * orgs
 
-	fmt.Printf("params: metricname=%s, orgs=%d, mpo=%d, period=%d, flush=%d, offset=%d, speedup=%d, stopAtNow=%t\n", metricName, orgs, mpo, period, flush, offset, speedup, stopAtNow)
-	fmt.Printf("per org:         each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)\n", flushDur, ratePerFlush, ratePerS, orgs*mpo)
-	fmt.Printf("times %4d orgs: each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)\n", orgs, flushDur, ratePerFlush, ratePerS, orgs*mpo)
+	tmpl := `params: %s, orgs=%d, mpo=%d, period=%d, flush=%d, offset=%d, speedup=%d, stopAtNow=%t
+per org:         each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)
+times %4d orgs: each %s, flushing %d metrics so rate of %d Hz. (%d total unique series)
+`
+	fmt.Printf(tmpl, builder.Info(), orgs, mpo, period, flush, offset, speedup, stopAtNow,
+		flushDur, ratePerFlush, ratePerS, orgs*mpo,
+		orgs, flushDur, ratePerFlush, ratePerS, orgs*mpo)
 
 	tick := time.NewTicker(flushDur)
 

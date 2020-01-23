@@ -20,11 +20,6 @@ import (
 	"github.com/spf13/cobra"
 )
 
-var (
-	offset  time.Duration
-	speedup int
-)
-
 var backfillCmd = &cobra.Command{
 	Use:   "backfill",
 	Short: "backfills old data and stops when 'now' is reached",
