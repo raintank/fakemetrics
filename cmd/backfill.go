@@ -33,7 +33,7 @@ var backfillCmd = &cobra.Command{
 		period = int(periodDur.Seconds())
 		flush = int(flushDur.Nanoseconds() / 1000 / 1000)
 		outs := getOutputs()
-		dataFeed(outs, metricName, orgs, mpo, period, flush, int(offset.Seconds()), speedup, true)
+		dataFeed(outs, orgs, mpo, period, flush, int(offset.Seconds()), speedup, true, TaggedBuilder{metricName})
 	},
 }
 

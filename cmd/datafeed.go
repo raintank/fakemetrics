@@ -11,9 +11,22 @@ import (
 	"github.com/raintank/worldping-api/pkg/log"
 )
 
-// slice of MetricData's, per orgid
-// with time and value not set yet.
-func buildMetrics(metricName string, orgs, mpo, period int) [][]schema.MetricData {
+type MetricPayloadBuilder interface {
+	Info() string
+	// Build builds a slice of slices of MetricData's( per orgid), with time and value not set yet.
+	Build(orgs, mpo, period int) [][]schema.MetricData
+}
+
+// uses tags
+type TaggedBuilder struct {
+	metricName string
+}
+
+func (tb TaggedBuilder) Info() string {
+	return "metricName=" + tb.metricName
+}
+
+func (tb TaggedBuilder) Build(orgs, mpo, period int) [][]schema.MetricData {
 	out := make([][]schema.MetricData, orgs)
 	for o := 0; o < orgs; o++ {
 		metrics := make([]schema.MetricData, mpo)
@@ -94,7 +107,7 @@ func buildMetrics(metricName string, orgs, mpo, period int) [][]schema.MetricDat
 // period in seconds
 // flush  in ms
 // offset in seconds
-func dataFeed(outs []out.Out, metricName string, orgs, mpo, period, flush, offset, speedup int, stopAtNow bool) {
+func dataFeed(outs []out.Out, orgs, mpo, period, flush, offset, speedup int, stopAtNow bool, builder MetricPayloadBuilder) {
 	flushDur := time.Duration(flush) * time.Millisecond
 
 	if mpo*speedup%period != 0 {
@@ -128,7 +141,7 @@ func dataFeed(outs []out.Out, metricName string, orgs, mpo, period, flush, offse
 
 	tick := time.NewTicker(flushDur)
 
-	metrics := buildMetrics(metricName, orgs, mpo, period)
+	metrics := builder.Build(orgs, mpo, period)
 
 	mp := int64(period)
 	ts := time.Now().Unix() - int64(offset) - mp
